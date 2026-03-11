@@ -1,0 +1,89 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 40px;
+    background: #F5F5F5;
+}
+
+h1 {
+    text-align: center;
+}
+
+.formulario {
+    background: #FFF;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+input, button {
+    padding: 8px;
+    margin: 5px 0;
+}
+
+button {
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #FFF;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #DDD;
+    text-align: left;
+}
+
+tr.atrasado {
+    background: #FFCCCC;
+}
+
+tr.hoy {
+    background: #FFD9B3;
+}
+
+tr.manana {
+    background: #FFF3B3;
+}
+
+tr.normal {
+    background: #D9FFD9;
+}
+
+tr.entregado {
+    background: #FFF;
+    color: #777;
+}
+
+td {
+    vertical-align: top;
+}
+
+.filtros {
+    margin-bottom: 10px;
+}
+
+.filtros button {
+    background: #DDD;
+    border: none;
+    padding: 8px 12px;
+    margin-right: 5px;
+    border-radius: 4px;
+}
+
+.filtros button.activo {
+    background: #4CAF50;
+    color: #FFF;
+}
+
+.producto-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.producto-row input {
+    flex: 1;
+}
