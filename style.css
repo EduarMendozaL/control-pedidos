@@ -9,9 +9,10 @@ h1 {
 }
 
 .formulario {
-    background: #FFF;
+    background-color: #5DC1B9;
     padding: 20px;
     border-radius: 8px;
+    position: relative;
 }
 
 input, button {
@@ -52,6 +53,10 @@ tr.normal {
     background: #D9FFD9;
 }
 
+tr.marcado {
+    background: #C8F7C5 !important;
+}
+
 tr.entregado {
     background: #FFF;
     color: #777;
@@ -59,6 +64,21 @@ tr.entregado {
 
 td {
     vertical-align: top;
+}
+
+.logo-formulario {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    width: 90px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.acciones-datos {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
 }
 
 .filtros {

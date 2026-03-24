@@ -26,8 +26,70 @@ function inicializarFormulario() {
             renderizarTabla();
         });
     });
+    document.getElementById("exportarBtn").addEventListener("click", exportarDatos);
+    document.getElementById("importarBtn").addEventListener("click", () => {
+        document.getElementById("importarInput").click();
+    });
+    document.getElementById("importarInput").addEventListener("change", importarDatos);
 
     agregarProducto();
+}
+
+function exportarDatos() {
+    try {
+        const dataStr = JSON.stringify(pedidos, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = `respaldo_pedidos_${obtenerFechaHoy()}.json`;
+
+        a.click();
+
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.err("Error al exportar", error);
+        alert("Error al exportar datos");
+    }
+}
+
+function importarDatos(event) {
+    const archivo = event.target.files[0];
+
+    if (!archivo) {
+        return;
+    }
+
+    const lector = new FileReader();
+
+    lector.onload = function(e) {
+        try {
+            const datosImportados = JSON.parse(e.target.result);
+
+            if (!Array.isArray(datosImportados)) {
+                throw new Error("Formato inválido");
+            }
+
+            if (!confirm("Esto reemplazará todos los pedidos actuales. ¿Continuar?")) {
+                return;
+            }
+
+            pedidos = datosImportados;
+
+            guardarPedidos();
+            renderizarTabla();
+            actualizarContadores();
+
+            alert("Datos importados correctamente");
+        } catch (error) {
+            console.error("Error al importar", error);
+            alert("Archivo inválido");
+        }
+    };
+
+    lector.readAsText(archivo);
+    event.target.value = "";
 }
 
 function cargarPedidos() {
@@ -150,6 +212,7 @@ function crearPedido(e) {
                 productos,
                 fechaPedido: document.getElementById("fechaPedido").value,
                 fechaEntrega: document.getElementById("fechaEntrega").value,
+                categoria: document.getElementById("categoria").value,
                 total,
                 abonado,
                 saldo: total - abonado
@@ -163,9 +226,11 @@ function crearPedido(e) {
                 productos,
                 fechaPedido: document.getElementById("fechaPedido").value,
                 fechaEntrega: document.getElementById("fechaEntrega").value,
+                categoria: document.getElementById("categoria").value,
                 total,
                 abonado,
                 saldo: total - abonado,
+                marcado: false,
                 estado: "Pendiente"
             };
     
@@ -205,8 +270,9 @@ function renderizarTabla() {
         lista = lista.filter(p => {
             const cliente = p.cliente.toLowerCase();
             const productos = p.productos.map(prod => prod.nombre.toLowerCase()).join(" ");
+            const categoria = (p.categoria || "").toLowerCase();
 
-            return cliente.includes(textoBusqueda) || productos.includes(textoBusqueda);
+            return cliente.includes(textoBusqueda) || productos.includes(textoBusqueda) || categoria.includes(textoBusqueda);
         });
     }
     
@@ -228,7 +294,11 @@ function renderizarTabla() {
         if (pedido.estado === "Entregado") {
             tr.classList.add("entregado");
         } else {
-            tr.className = obtenerClaseEntrega(pedido.fechaEntrega);
+            if (pedido.marcado) {
+                tr.classList.add("marcado");
+            } else {
+                tr.className = obtenerClaseEntrega(pedido.fechaEntrega);
+            }
         }
 
         tr.classList.add(obtenerClaseEntrega(pedido.fechaEntrega));
@@ -236,12 +306,19 @@ function renderizarTabla() {
         tr.innerHTML = `
             <td>${pedido.cliente}</td>
             <td>${resumenProductos(pedido.productos)}</td>
+            <td>${pedido.categoria || ""}</td>
             <td>${formatearFecha(pedido.fechaPedido)}</td>
             <td>${formatearFecha(pedido.fechaEntrega)}</td>
             <td>${formatearCLP(pedido.total)}</td>
             <td>${formatearCLP(pedido.abonado)}</td>
             <td>${formatearCLP(pedido.saldo)}</td>
-            <td>${pedido.estado}</td>
+            <td>
+                ${pedido.estado}
+                ${pedido.estado === "Pendiente" ? `
+                    <br>
+                    <input type="checkbox" ${pedido.marcado ? "checked" : ""} onchange="toggleMarcado(${pedido.id}, this.checked)">
+                ` : ""}
+            </td>
             <td>
             <button onclick="editarPedido(${pedido.id})">Editar</button>
             <button onclick="cambiarEstado(${pedido.id})">Estado</button>
@@ -281,6 +358,13 @@ function cambiarEstado(id) {
     actualizarContadores();
 }
 
+function toggleMarcado(id, valor) {
+    const pedido = pedidos.find(p => p.id === id);
+    pedido.marcado = valor;
+    guardarPedidos();
+    renderizarTabla();
+}
+
 function editarPedido(id) {
     const pedido = pedidos.find(p => p.id === id);
 
@@ -289,6 +373,7 @@ function editarPedido(id) {
     document.getElementById("cliente").value = pedido.cliente;
     document.getElementById("fechaPedido").value = pedido.fechaPedido;
     document.getElementById("fechaEntrega").value = pedido.fechaEntrega;
+    document.getElementById("categoria").value = pedido.categoria || "";
     document.getElementById("abonado").value = pedido.abonado;
 
     const container = document.getElementById("productosContainer");
